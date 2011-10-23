@@ -1,0 +1,42 @@
+// To store the only information about a given subscription we care about.
+subscriptions: (OPML list, sync of subscribe/unsubscribe)
+subscriptionID: 0 (incremented to generate subscription ID's)
+subscription:<subscription_id (hash)
+	htmlURL
+	feedURL
+	name
+	type
+
+// Subscriptions could be organized in folders on the client, this dataset will be
+// used to store all folders a given subscription is placed inside to generate the 
+// OPML file appropriately. (a subscription can live in more than one folder)
+subscription.tags:<subscription_id> (basic string?)
+	tags (list)	
+
+// Clients will make conditional GET requests to see if the subscription list has
+// changed since the last request was made to reduce bandwith consumption.
+// This dataset will store a list of subscription changes per user. The keys will
+// be updated whenever a subscription is created/deleted/tagged(put in a folder)/edited
+subscription.changed:<user_id> (zset)
+	score = datetime
+	value = <subscription_id>
+
+// To store the only information we care about a feed's items
+// 1) the uid of the item itself
+// 2) the status as an 8-bit bitfield to indicate read vs unread as 
+//    well as starred and deleted vs saved (with room for new status 
+//    meanings in the remaining 5 bits)
+items: (sync of read/unread/starred/deleted/saved status)
+
+// Multiple users could have the same feed in their list and 
+// therefore have item status for the same item.
+item:<user_id>:<item_id> (basic string?)
+	status
+
+// A client will make conditional GET requests to find what items have changed since
+// their last check. This dataset will contain the keys of all items that have changed
+// with a score based on the timestamp when the change occured. Each key will be updated
+// when the client sends back a list of item changes to record (all at once or individually)
+items.changed:<user_id> (zset)
+	score = datetime
+	value = <item_id>
