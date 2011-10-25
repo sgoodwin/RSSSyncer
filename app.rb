@@ -12,12 +12,14 @@ end
 
 # Items
 get '/items.?:format?' do
-	last_modified = request.env['If-Modified-Since'] || 0
+	last_modified = request.env['HTTP_IF_MODIFIED_SINCE'] || 0
 	items = Item.modified_since(last_modified)
+	response.headers['Last-Modified'] = Item.maxscore.to_s
+	response.headers['ETag'] = Item.maxscore.to_s
 	if(items.empty?)
 		304
 	else
-		return items.join(', ')
+		return items.to_json
 	end
 end
 
@@ -28,7 +30,6 @@ end
 
 post '/items.?:format?' do
 	success = true
-	puts params.keys
 	items = JSON.parse(params['items'])
 	items.each do |item_params|
 		item = Item.create_or_update(item_params)

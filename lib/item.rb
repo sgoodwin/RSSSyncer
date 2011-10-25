@@ -1,5 +1,6 @@
 require 'lib/usersupport'
 require 'lib/redissupport'
+require 'json/pure'
 
 # To store the only information we care about a feed's items
 # 1) the uid of the item itself
@@ -31,6 +32,11 @@ class Item
 	extend UserSupport
 	extend RedisSupport
 	
+	@@maxscore = 0
+	def self.maxscore
+		@@maxscore
+	end
+	
 	def initialize(params)
 		self.datetime = params['datetime']
 		self.status = params['status']
@@ -47,8 +53,12 @@ class Item
 		
 		hashed_id = Digest::MD5.hexdigest(datetime.to_s+item_id)
 		
+		old_items = self.redis.keys("item:#{self.user_id}:*")
+				
 		# Store the info about the item
-		self.redis.hmset("item:#{self.user_id}:#{hashed_id}", 'status', status, 'item_id', item_id)
+		key = "item:#{self.user_id}:#{hashed_id}"
+		old_hash = self.redis.hgetall(key)
+		self.redis.hmset(key, 'status', status, 'item_id', item_id, 'datetime', datetime)
 		
 		# Add the item to the 'recently changed' sorted set for the user.
 		self.redis.zadd("items.changed:#{self.user_id}", datetime, hashed_id)
@@ -59,20 +69,39 @@ class Item
 	end
 	
 	def self.modified_since(timestamp)
-		keys = self.redis.zrange("item.changed:#{self.user_id}", timestamp, -1)
+		changed_key = "items.changed:#{self.user_id}"
+		keys = self.redis.zrange(changed_key, timestamp, -1, :withscores => true)
 		items = []
 		keys.each do |key|
-			items.push(self.find_by_id(key))
+			if(key.length == 10)
+				score = Time.at(key.to_i).to_i
+				if(score > @@maxscore)
+					@@maxscore = score
+				end
+			else
+				items.push(self.find_by_id(key))
+			end
 		end
 		return items
 	end
 	
 	def self.find_by_id(hash_id)
-		values = self.redis.hgetall("item:1:#{hash_id}")
-		puts "#{values}, #{values.class}"
+		values = self.redis.hgetall("item:#{self.user_id}:#{hash_id}")
 		return self.new(values)
 	end
 		
+	def to_json(*a)
+		{
+			"datetime"=>self.datetime,
+			"status"=>self.status,
+			"item_id"=>self.item_id
+		}.to_json(*a)
+	end
+	
+	def to_string
+		"<#{self.class}: #{self.datetime}, #{self.item_id} >"
+	end
+	
 	def destroy
 		# This should delete any keys created by create_or_update
 		hashed_id = Digest::MD5.hexdigest(self.datetime+self.item_id)

@@ -86,7 +86,6 @@ class Subscription
 	
 	def self.find_by_id(subscription_id)
 		values = self.redis.hgetall("subscription:#{subscription_id}")
-		puts "#{values}, #{values.class}"
 		return self.new(values)
 	end
 	
