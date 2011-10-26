@@ -98,7 +98,7 @@ class Item
 		}.to_json(*a)
 	end
 	
-	def to_string
+	def to_s
 		"<#{self.class}: #{self.datetime}, #{self.item_id} >"
 	end
 	

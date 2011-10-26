@@ -3,6 +3,8 @@ require 'sinatra'
 require 'lib/subscription'
 require 'lib/item'
 require 'json/pure'
+require 'lib/array+opml'
+require 'lib/helper'
 
 set :show_exceptions, false
 
@@ -64,23 +66,20 @@ end
 
 # don't think this is necessary
 # put '/items/:item_id.?:format?' do
-#	item = Item.find_by_id(params[:item_id])
-#	if(item)
-#		return item
-#	else
-#		400
-#	end
 # end
 
 # Subscriptions
-
 get '/subscriptions.?:format?' do
+	format = params[:format]
 	last_modified = request.env['If-Modified-Since'] || 0
 	subscriptions = Subscription.modified_since(last_modified)
-	if(subscriptions.empty?)
+	if(subscriptions.empty? && last_modified > 0)
 		304
+	elsif(last_modified == 0)
+		# If they feed a 0, they are starting from scratch and need to know there are no subscriptions.
+		return with_format([], format)
 	else
-		return subscriptions.join(', ')
+		with_format(subscriptions, format)
 	end
 end
 
@@ -94,9 +93,9 @@ get '/subscriptions/:subscription_id.?:format?' do
 end
 
 post '/subscriptions.?:format?' do
-	subscription = Subscription.create_from_params(params)
+	subscription = Subscription.create_or_update(params)
 	if(subscription)
-		subscription
+		return subscription.to_json
 	else
 		400
 	end
@@ -113,11 +112,12 @@ put '/subscriptions/:subscription_id.?:format?' do
 end
 
 delete '/subscriptions/:subscription_id.?:format?' do
-	subscription = Subscriptions.find_by_id(params[:subscriptions])
+	subscription = Subscription.find_by_id(params[:subscription_id])
+	puts "sub: #{subscription.to_s}"
 	if(!subscription)
-		404
+		return 404
 	end
 	
 	subscription.destroy
-	200
+	return 200
 end
