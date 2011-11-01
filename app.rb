@@ -13,7 +13,7 @@ set :show_exceptions, false
 error WebException do
 	error = env['sinatra.error']
 	status error.code
-	with_format({"error"=>error.message}, error.format)
+	{"error"=>error.message}.to_json
 end
 
 get '/' do

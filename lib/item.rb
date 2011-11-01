@@ -44,6 +44,10 @@ class Item
 		self.item_id = params['item_id'] if params['item_id']
 	end
 	
+	def self.check_status(status)
+		return status.to_s.to_i(2) <= 255 && status.to_i >= 0
+	end
+	
 	def self.create_or_update(params)
 		datetime = params['datetime'] if params['datetime']
 		status = params['status'] if params['status']
@@ -52,7 +56,7 @@ class Item
 			raise WebException.new("You need to supply datetime, status, and item_id for each item!", 400)
 		end
 		
-		# Ideally there would be a check in here to make sure status is a valid 8-bit number.
+		raise WebException.new("Status must be a valid 8-bit", 400) unless check_status(status)
 		
 		hashed_id = Digest::MD5.hexdigest(datetime.to_s+item_id)
 		
