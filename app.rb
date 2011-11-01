@@ -1,4 +1,5 @@
 require 'rubygems'
+require 'rdiscount'
 require 'sinatra'
 require 'lib/subscription'
 require 'lib/item'
@@ -9,7 +10,7 @@ require 'lib/helper'
 set :show_exceptions, false
 
 get '/' do
-	"hello world"
+	markdown File.read("./README.md")
 end
 
 # Items
@@ -86,7 +87,7 @@ end
 get '/subscriptions/:subscription_id.?:format?' do
 	subscription = Subscription.find_by_id(params[:subscription_id])
 	if(subscription)
-		return subscription
+		return subscription.to_json
 	else
 		404
 	end		
@@ -107,7 +108,7 @@ put '/subscriptions/:subscription_id.?:format?' do
 		404
 	end
 	
-	subscription.update_with_params(params)
+	subscription.create_or_update(params)
 	subscription
 end
 

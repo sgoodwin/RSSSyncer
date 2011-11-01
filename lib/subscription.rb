@@ -37,12 +37,12 @@ class Subscription
 	extend RedisSupport
 	
 	def initialize(params)
-		self.html_url = params['html_url']
-		self.feed_url = params['feed_url']
-		self.name = params['name']
-		self.type = params['type']
-		self.tags = params['tags']
-		self.subscription_id = params['subscription_id']
+		self.html_url = params['html_url'] if params['html_url']
+		self.feed_url = params['feed_url'] if params['feed_url']
+		self.name = params['name'] if params['name']
+		self.type = params['type'] if params['type']
+		self.tags = params['tags'] if params['tags']
+		self.subscription_id = params['subscription_id'] if params['subscription_id']
 	end
 	
 	def self.create_or_update(params)
