@@ -1,6 +1,7 @@
 require 'redis'
 require './lib/usersupport'
 require './lib/redissupport'
+require './lib/webexception'
 
 # To store the only information about a given subscription we care about.
 # subscriptions: (OPML list, sync of subscribe/unsubscribe)
@@ -52,7 +53,7 @@ class Subscription
 		type = params['type']
 		tags = params['tags']
 		if(!(html_url && feed_url && name && type))
-			return nil
+			raise WebException.new("You need to supply html_url, feed_url, name, and type for each subscription!", 400)
 		end
 		
 		# Get the next subscription ID from the system.
@@ -90,7 +91,7 @@ class Subscription
 	def self.find_by_id(subscription_id)
 		values = self.redis.hgetall("subscription:#{subscription_id}")
 		if(values.empty?)
-			return nil
+			raise WebException.new("Could not find a subscription with id #{subscription_id}", 404)
 		end
 		return self.new(values)
 	end

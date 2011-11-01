@@ -87,39 +87,22 @@ end
 
 get '/subscriptions/:subscription_id.?:format?' do
 	subscription = Subscription.find_by_id(params[:subscription_id])
-	if(subscription)
-		return subscription.to_json
-	else
-		404
-	end		
+	return subscription.to_json
 end
 
 post '/subscriptions.?:format?' do
 	subscription = Subscription.create_or_update(params)
-	if(subscription)
-		return subscription.to_json
-	else
-		400
-	end
+	subscription.to_json
 end
 
 put '/subscriptions/:subscription_id.?:format?' do
 	subscription = Subscriptions.find_by_id(params[:subscriptions])
-	if(!subscription)
-		404
-	end
-	
 	subscription.create_or_update(params)
-	subscription
+	subscription.to_json
 end
 
 delete '/subscriptions/:subscription_id.?:format?' do
 	subscription = Subscription.find_by_id(params[:subscription_id])
-	puts "sub: #{subscription.to_s}"
-	if(!subscription)
-		return 404
-	end
-	
 	subscription.destroy
 	return 200
 end
