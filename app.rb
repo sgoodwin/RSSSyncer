@@ -39,7 +39,6 @@ get '/items/:item_id.?:format?' do
 end
 
 post '/items.?:format?' do
-	success = true
 	if(params['items'].nil?)
 		raise WebException.new("You need to supply a JSON-formatted array of items!", 400)
 	end
@@ -51,18 +50,12 @@ post '/items.?:format?' do
 end
 
 put '/items.?:format?' do
-	success = true
-	params['items'].each do |item_params|
-		item = Item.create_or_update(item_params)
-		if(!item)
-			success = false
-		end
+	if(params['items'].nil?)
+		raise WebException.new("You need to supply a JSON-formatted array of items!", 400)
 	end
-	
-	if(success)
-		200
-	else
-		400
+	items = JSON.parse(params['items'])
+	items.each do |item_params|
+		item = Item.create_or_update(item_params)
 	end
 end
 
