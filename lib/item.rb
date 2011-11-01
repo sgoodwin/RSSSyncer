@@ -1,5 +1,6 @@
 require './lib/usersupport'
 require './lib/redissupport'
+require './lib/webexception'
 require 'json/pure'
 
 # To store the only information we care about a feed's items
@@ -38,19 +39,20 @@ class Item
 	end
 	
 	def initialize(params)
-		self.datetime = params['datetime']
-		self.status = params['status']
-		self.item_id = params['item_id']
+		self.datetime = params['datetime'] if params['datetime']
+		self.status =  params['status'] if params['status']
+		self.item_id = params['item_id'] if params['item_id']
 	end
 	
 	def self.create_or_update(params)
-		raise BadParams, "WTF bro?"
-		datetime = params['datetime']
-		status = params['status']
-		item_id = params['item_id']
+		datetime = params['datetime'] if params['datetime']
+		status = params['status'] if params['status']
+		item_id = params['item_id'] if params['item_id']
 		if(!(datetime && status && item_id))
-			return nil
+			raise WebException.new("You need to supply datetime, status, and item_id for each item!", 400)
 		end
+		
+		# Ideally there would be a check in here to make sure status is a valid 8-bit number.
 		
 		hashed_id = Digest::MD5.hexdigest(datetime.to_s+item_id)
 		
@@ -88,7 +90,11 @@ class Item
 	
 	def self.find_by_id(hash_id)
 		values = self.redis.hgetall("item:#{self.user_id}:#{hash_id}")
-		return self.new(values)
+		if(values)
+			return self.new(values)
+		end
+		
+		raise WebException.new("Could not find an item with hashed ID: #{hash_id}", 404)
 	end
 		
 	def to_json(*a)
