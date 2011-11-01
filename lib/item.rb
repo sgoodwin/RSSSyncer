@@ -1,5 +1,5 @@
-require 'lib/usersupport'
-require 'lib/redissupport'
+require './lib/usersupport'
+require './lib/redissupport'
 require 'json/pure'
 
 # To store the only information we care about a feed's items

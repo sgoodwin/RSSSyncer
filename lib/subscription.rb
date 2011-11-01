@@ -1,6 +1,6 @@
 require 'redis'
-require 'lib/usersupport'
-require 'lib/redissupport'
+require './lib/usersupport'
+require './lib/redissupport'
 
 # To store the only information about a given subscription we care about.
 # subscriptions: (OPML list, sync of subscribe/unsubscribe)

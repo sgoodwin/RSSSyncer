@@ -1,11 +1,11 @@
 require 'rubygems'
 require 'rdiscount'
 require 'sinatra'
-require 'lib/subscription'
-require 'lib/item'
+require './lib/subscription'
+require './lib/item'
 require 'json/pure'
-require 'lib/array+opml'
-require 'lib/helper'
+require './lib/array+opml'
+require './lib/helper'
 
 set :show_exceptions, false
 
