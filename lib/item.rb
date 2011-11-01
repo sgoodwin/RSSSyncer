@@ -64,7 +64,6 @@ class Item
 				
 		# Store the info about the item
 		key = "item:#{self.user_id}:#{hashed_id}"
-		old_hash = self.redis.hgetall(key)
 		self.redis.hmset(key, 'status', status, 'item_id', item_id, 'datetime', datetime)
 		
 		# Add the item to the 'recently changed' sorted set for the user.
