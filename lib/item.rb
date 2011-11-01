@@ -44,6 +44,7 @@ class Item
 	end
 	
 	def self.create_or_update(params)
+		raise BadParams, "WTF bro?"
 		datetime = params['datetime']
 		status = params['status']
 		item_id = params['item_id']

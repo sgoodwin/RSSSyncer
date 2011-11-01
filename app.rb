@@ -4,17 +4,24 @@ require 'sinatra'
 require './lib/subscription'
 require './lib/item'
 require 'json/pure'
-require './lib/array+opml'
+require './lib/opmlsupport'
 require './lib/helper'
+require './lib/webexception'
 
 set :show_exceptions, false
+
+error WebException do
+	error = env['sinatra.error']
+	status error.code
+	with_format({"error"=>error.message}, error.format)
+end
 
 get '/' do
 	markdown File.read("./README.md")
 end
 
 # Items
-get '/items.?:format?' do
+get '/items.?:format?' do	
 	last_modified = request.env['HTTP_IF_MODIFIED_SINCE'] || 0
 	items = Item.modified_since(last_modified)
 	response.headers['Last-Modified'] = Item.maxscore.to_s
@@ -33,19 +40,13 @@ end
 
 post '/items.?:format?' do
 	success = true
+	if(params['items'].nil?)
+		raise WebException.new("You need to supply a JSON-formatted array of items!", 400)
+	end
+	
 	items = JSON.parse(params['items'])
 	items.each do |item_params|
 		item = Item.create_or_update(item_params)
-		if(!item)
-			success = false
-			break
-		end
-	end
-	
-	if(success)
-		200
-	else
-		400
 	end
 end
 

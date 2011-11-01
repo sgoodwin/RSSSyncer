@@ -1,4 +1,4 @@
-require '../lib/array+opml'
+require '../lib/opmlsupport'
 
 class ThingWithTags
 	def tags
