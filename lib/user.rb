@@ -16,7 +16,7 @@ class User
 	
 	def self.auth(username, password)
 		hash = self.hash(username, password)
-		@@user_id = self.redis.get("user:#{hash}")
+		self.auth_with_hash(hash)
 	end
 	
 	def self.auth_with_hash(hash)

@@ -7,4 +7,6 @@ rescue Exception=>e
 	puts e.message
 end
 
-User::sign_up('hi', 'sup?')
+# We might wanna test signing up with dups, signing up
+# authorizing, testing for the exception when a user is not
+# authorized etc.
