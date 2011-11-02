@@ -1,5 +1,5 @@
 require 'redis'
-require './lib/usersupport'
+require './lib/user'
 require './lib/redissupport'
 
 # To store the only information about a given subscription we care about.
@@ -33,7 +33,6 @@ class Subscription
 	attr_accessor :tags
 	attr_accessor :subscription_id
 	
-	extend UserSupport
 	extend RedisSupport
 	
 	def initialize(params)
@@ -68,14 +67,14 @@ class Subscription
 		self.redis.sadd("subscription.tags:#{subscription_id}", tags)
 		
 		# Add the subscription to the list of subscriptions changed for this user
-		self.redis.zadd("subscription.changed:#{self.user_id}", Time.new.to_i.to_s, subscription_id)
+		self.redis.zadd("subscription.changed:#{User.user_id}", Time.new.to_i.to_s, subscription_id)
 		
 		subscription = Subscription.new(params)
 		return subscription
 	end
 	
 	def self.modified_since(timestamp)
-		keys = self.redis.zrange("subscription.changed:#{self.user_id}", timestamp, -1)
+		keys = self.redis.zrange("subscription.changed:#{User.user_id}", timestamp, -1)
 		subscriptions = []
 		keys.each do |key|
 			sub = self.find_by_id(key)
