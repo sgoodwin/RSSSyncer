@@ -1,6 +1,5 @@
 require './lib/usersupport'
 require './lib/redissupport'
-require './lib/webexception'
 require 'json/pure'
 
 # To store the only information we care about a feed's items
@@ -53,10 +52,10 @@ class Item
 		status = params['status'] if params['status']
 		item_id = params['item_id'] if params['item_id']
 		if(!(datetime && status && item_id))
-			raise WebException.new("You need to supply datetime, status, and item_id for each item!", 400)
+			throw(:halt, [400, "You need to supply datetime, status, and item_id for each item!\n"])
 		end
 		
-		raise WebException.new("Status must be a valid 8-bit", 400) unless check_status(status)
+		throw(:halt, [400, "Status must be a valid 8-bit\n"]) unless check_status(status)
 		
 		hashed_id = Digest::MD5.hexdigest(datetime.to_s+item_id)
 		
@@ -97,7 +96,7 @@ class Item
 			return self.new(values)
 		end
 		
-		raise WebException.new("Could not find an item with hashed ID: #{hash_id}", 404)
+		throw(:halt, [404, "Could not find an item with hashed ID: #{hash_id}\n"]) unless check_status(status)
 	end
 		
 	def to_json(*a)
