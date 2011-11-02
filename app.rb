@@ -6,15 +6,8 @@ require './lib/item'
 require 'json/pure'
 require './lib/opmlsupport'
 require './lib/helper'
-require './lib/webexception'
 
 set :show_exceptions, false
-
-error WebException do
-	error = env['sinatra.error']
-	status error.code
-	{"error"=>error.message}.to_json
-end
 
 get '/' do
 	markdown File.read("./README.md")
@@ -40,7 +33,7 @@ end
 
 post '/items.?:format?' do
 	if(params['items'].nil?)
-		raise WebException.new("You need to supply a JSON-formatted array of items!", 400)
+		throw(:halt, [400, "You need to supply a JSON-formatted array of items!\n"])
 	end
 	
 	items = JSON.parse(params['items'])
@@ -51,7 +44,7 @@ end
 
 put '/items.?:format?' do
 	if(params['items'].nil?)
-		raise WebException.new("You need to supply a JSON-formatted array of items!", 400)
+		throw(:halt, [400, "You need to supply a JSON-formatted array of items!\n"])
 	end
 	items = JSON.parse(params['items'])
 	items.each do |item_params|
