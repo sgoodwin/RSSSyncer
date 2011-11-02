@@ -12,6 +12,22 @@ instagram and twitter as well as RSS.
 Usage:
 ======
 
+User Authentication:
+--------------------
+
+User authentication is handled by HTTP Basic Auth. New accounts
+can be created with the following request:
+
+**POST** /signup
+Returns a 200 response code upon successful account creation.
+- username: The desired username
+- password: The desired user's password
+
+I am doing nothing special to extra-encrypt the user's password because 
+there is no reason to. No personal data is stored on the server, simply
+a user's reading habits. No email is necessary. All requests require
+authorization except / and /signup
+
 Syncing subscriptions:
 ----------------------
 
@@ -65,7 +81,6 @@ must be supplied as a JSON-encoded array of dictionaries, each with the followin
 Things not done yet:
 ====================
 
-- User authentication
 - Input validation
 - Battle hardening
 - Testing ( I am developing a command-line-based rss reader to use to test the syncing system's facilities )
