@@ -58,14 +58,14 @@ class Item
 		
 		hashed_id = Digest::MD5.hexdigest(datetime.to_s+item_id)
 		
-		old_items = self.redis.keys("item:#{User::user_id}:*")
+		old_items = self.redis.keys("item:#{User.user_id}:*")
 				
 		# Store the info about the item
-		key = "item:#{User::user_id}:#{hashed_id}"
+		key = "item:#{User.user_id}:#{hashed_id}"
 		self.redis.hmset(key, 'status', status, 'item_id', item_id, 'datetime', datetime)
 		
 		# Add the item to the 'recently changed' sorted set for the user.
-		self.redis.zadd("items.changed:#{User::user_id}", datetime, hashed_id)
+		self.redis.zadd("items.changed:#{User.user_id}", datetime, hashed_id)
 		
 		# If everything works, return an object with the info in it
 		item = self.new(params)
@@ -73,7 +73,7 @@ class Item
 	end
 	
 	def self.modified_since(timestamp)
-		changed_key = "items.changed:#{User::user_id}"
+		changed_key = "items.changed:#{User.user_id}"
 		keys = self.redis.zrange(changed_key, timestamp, -1, :withscores => true)
 		items = []
 		keys.each do |key|
@@ -90,7 +90,7 @@ class Item
 	end
 	
 	def self.find_by_id(hash_id)
-		values = self.redis.hgetall("item:#{User::user_id}:#{hash_id}")
+		values = self.redis.hgetall("item:#{User.user_id}:#{hash_id}")
 		if(values)
 			return self.new(values)
 		end
@@ -113,6 +113,6 @@ class Item
 	def destroy
 		# This should delete any keys created by create_or_update
 		hashed_id = Digest::MD5.hexdigest(self.datetime+self.item_id)
-		self.redis.del("item:#{User::user_id}:#{hashed_id}", "items.changed:#{User::user_id}")
+		self.redis.del("item:#{User.user_id}:#{hashed_id}", "items.changed:#{User.user_id}")
 	end
 end
