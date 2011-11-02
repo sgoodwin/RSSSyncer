@@ -13,6 +13,10 @@ get '/' do
 	markdown File.read("./README.md")
 end
 
+post '/auth' do
+	
+end
+
 # Items
 get '/items.?:format?' do	
 	last_modified = request.env['HTTP_IF_MODIFIED_SINCE'] || 0
