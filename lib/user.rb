@@ -19,6 +19,10 @@ class User
 		@@user_id = self.redis.get("user:#{hash}")
 	end
 	
+	def self.auth_with_hash(hash)
+		@@user_id = self.redis.get("user:#{hash}")
+	end
+	
 	def self.sign_up(username, password)
 		hash = self.hash(username, password)
 		
